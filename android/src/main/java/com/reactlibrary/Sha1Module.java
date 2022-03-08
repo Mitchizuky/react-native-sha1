@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.math.*;
 
 import java.util.UUID;
 
@@ -30,19 +31,33 @@ public class Sha1Module extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void sha1(final String toHash, Promise promise) {
-      MessageDigest md = null;
+
+ MessageDigest digest = null;
       try {
-          md = MessageDigest.getInstance("SHA-1");
-          md.update(toHash.getBytes("UTF-8"), 0, toHash.length());
-          String hash = String.format("%040x", new java.math.BigInteger(1, md.digest()));
-          promise.resolve(hash);
+          MessageDigest md = MessageDigest.getInstance("SHA-1");
+          byte[] textBytes = toHash.getBytes("iso-8859-1");
+          md.update(textBytes, 0, textBytes.length);
+          byte[] sha1hash = md.digest();
+         
+          StringBuilder buf = new StringBuilder();
+            for (byte b : sha1hash) {
+                int halfbyte = (b >>> 4) & 0x0F;
+                int two_halfs = 0;
+                do {
+                    buf.append((0 <= halfbyte) && (halfbyte <= 9) ? (char) ('0' + halfbyte) : (char) ('a' + (halfbyte - 10)));
+                    halfbyte = b & 0x0F;
+                } while (two_halfs++ < 1);
+            }
+           
+          promise.resolve(buf.toString());
 
       } catch (NoSuchAlgorithmException e) {
           e.printStackTrace();
           promise.reject("sha1", e.getMessage());
-      } catch (UnsupportedEncodingException e) {
+      }catch (UnsupportedEncodingException e) {
           e.printStackTrace();
           promise.reject("sha1", e.getMessage());
       }
   }
+
 }
