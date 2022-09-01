@@ -35,7 +35,7 @@ public class Sha1Module extends ReactContextBaseJavaModule {
  MessageDigest digest = null;
       try {
           MessageDigest md = MessageDigest.getInstance("SHA-1");
-          byte[] textBytes = toHash.getBytes("iso-8859-1");
+          byte[] textBytes = toHash.getBytes("UTF-8");
           md.update(textBytes, 0, textBytes.length);
           byte[] sha1hash = md.digest();
          
